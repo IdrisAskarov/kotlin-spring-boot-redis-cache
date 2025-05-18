@@ -12,22 +12,26 @@ import org.springframework.stereotype.Service
 @Service
 class ProductService(private val productRepository: ProductRepository) {
 
-    @CachePut(value = ["PRODUCT_CACHE"], key = "#result.id")
+    @CachePut(value = [PRODUCT_CACHE], key = "#result.id")
     fun createProduct(productDto: ProductDto): ProductDto = productRepository.save(productDto.toProduct()).toDto()
 
-    @Cacheable(value = ["PRODUCT_CACHE"], key = "#result.id")
+    @Cacheable(value = [PRODUCT_CACHE], key = "#id")
     fun getProductById(id: Long): ProductDto =
         productRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Cannot find product with id $id") }
             .toDto()
 
-    @CachePut(value = ["PRODUCT_CACHE"], key = "#result.id")
+    @CachePut(value = [PRODUCT_CACHE], key = "#result.id")
     fun updateProduct(id: Long, productDto: ProductDto): ProductDto {
         productRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Cannot find product with id $id") }
         return productRepository.save(productDto.toProduct(id)).toDto()
     }
 
-    @CacheEvict(value = ["PRODUCT_CACHE"], key = "#result.id")
+    @CacheEvict(value = [PRODUCT_CACHE], key = "#id")
     fun deleteProduct(id: Long): Unit = productRepository.deleteById(id)
+
+    companion object {
+        const val PRODUCT_CACHE: String = "products"
+    }
 }
